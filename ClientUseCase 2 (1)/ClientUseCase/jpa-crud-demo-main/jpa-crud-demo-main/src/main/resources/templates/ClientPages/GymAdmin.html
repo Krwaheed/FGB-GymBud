@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Admin Management</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<header>
+    <h1>Gym Admin Management</h1>
+</header>
+
+<section>
+    <h2>Add New Admin</h2>
+    <form id="add-admin-form">
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <input type="email" id="email" placeholder="Email">
+        <button type="button" onclick="addAdmin()">Add Admin</button>
+    </form>
+</section>
+
+<section>
+    <h2>Admin List</h2>
+    <div id="admin-list">
+        <!-- Admin list will be populated here -->
+    </div>
+</section>
+
+<footer>
+    <p>&copy; 2023 Gym Admin Management</p>
+</footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        fetchAdmins();
+    });
+
+    function addAdmin() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const email = document.getElementById('email').value;
+
+        fetch('/gymAdmin', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username, password, email }),
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Admin added:', data);
+                fetchAdmins(); // Refresh the list of admins
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function fetchAdmins() {
+        fetch('/gymAdmin')
+            .then(response => response.json())
+            .then(admins => {
+                const adminList = document.getElementById('admin-list');
+                adminList.innerHTML = ''; // Clear existing admins
+                admins.forEach(admin => {
+                    const div = document.createElement('div');
+                    div.innerHTML = `${admin.username} - <button onclick="deleteAdmin(${admin.id})">Delete</button>`;
+                    adminList.appendChild(div);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function deleteAdmin(adminId) {
+        fetch(`/gymAdmin/${adminId}`, {
+            method: 'DELETE',
+        })
+            .then(response => {
+                if (response.ok) {
+                    console.log(`Admin with ID ${adminId} deleted`);
+                    fetchAdmins(); // Refresh the list
+                } else {
+                    throw new Error(`Failed to delete admin with ID ${adminId}`);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+</script>
+</body>
+
+</html>
